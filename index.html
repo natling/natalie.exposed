@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>ｅｘｐｏｓｅｄ</title>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" href="favicon.png"/>
+  <style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0px;
+      background: black;
+      overflow: hidden;
+    }
+
+    div {
+      position: absolute;
+    }
+
+    #container {
+      width: 100%;
+      height: 100%;
+      background: url('DSC_5865a.jpg') center / cover no-repeat;
+    }
+
+    .layer {
+      width: 100%;
+      height: 100%;
+    }
+
+    .section {
+      transition: left 1s, top 1s;
+    }
+
+    .subsection {
+      transition: background-color 1s;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+</body>
+
+<script>
+  var settings = {
+    horizontal : {
+      sections    : 2,
+      subsections : 8,
+    },
+
+    vertical : {
+      sections    : 2,
+      subsections : 8,
+    },
+
+    blendModes : [
+      'multiply',
+      'screen',
+      'overlay',
+      'darken',
+      'lighten',
+      'color-dodge',
+      'color-burn',
+      'hard-light',
+      'soft-light',
+      'difference',
+      'exclusion',
+      'hue',
+      'saturation',
+      'color',
+      'luminosity',
+    ],
+  };
+
+  var randomIntegerInclusive = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  var randomItem = array => {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
+  var makeSliders = (orientation, sections, subsections) => {
+    var container = document.getElementById('container');
+
+    var layer = document.createElement('div');
+    layer.className = 'layer';
+    container.appendChild(layer);
+
+    var makeSections = sections => {
+      for (var i = 0; i < sections; i++) {
+        (i => {
+          var section = document.createElement('div');
+          section.className = 'section';
+          layer.appendChild(section);
+
+          if (orientation) {
+            section.style.width  = 300                + '%';
+            section.style.height = 100 / sections     + '%';
+            section.style.top    = 100 / sections * i + '%';
+          } else {
+            section.style.height = 300                + '%';
+            section.style.width  = 100 / sections     + '%';
+            section.style.left   = 100 / sections * i + '%';
+          }
+
+          var setPosition = () => {
+            if (orientation) {
+              section.style.left = randomIntegerInclusive(-200, 0) + '%';
+            } else {
+              section.style.top  = randomIntegerInclusive(-200, 0) + '%';
+            }
+
+            var delay = randomIntegerInclusive(100, 1000);
+            setTimeout(setPosition, delay);
+          }
+
+          setPosition();
+
+          var partitions = partition(100, subsections);
+
+          for (var j = 0; j < partitions.length - 1; j++) {
+            (j => {
+              var subsection = document.createElement('div');
+              subsection.className = 'subsection';
+              section.appendChild(subsection);
+
+              if (orientation) {
+                subsection.style.width  = partitions[j + 1] - partitions[j] + '%';
+                subsection.style.height = '100%';
+                subsection.style.left   = partitions[j] + '%';
+              } else {
+                subsection.style.height = partitions[j + 1] - partitions[j] + '%';
+                subsection.style.width  = '100%';
+                subsection.style.top    = partitions[j] + '%';
+              }
+
+              var setColor = () => {
+                var r = randomIntegerInclusive(0, 255);
+                var g = randomIntegerInclusive(0, 255);
+                var b = randomIntegerInclusive(0, 255);
+
+                var rgb = 'rgb(' + r + ', ' + g + ', ' + b + ')';
+                subsection.style.backgroundColor = rgb;
+                var delay = randomIntegerInclusive(1000, 2000);
+                setTimeout(setColor, delay);
+              }
+
+              var setBlendMode = () => {
+                subsection.style.mixBlendMode = randomItem(settings.blendModes);
+                var delay = randomIntegerInclusive(100, 1000);
+                setTimeout(setBlendMode, delay);
+              }
+
+              setColor();
+              setBlendMode();
+            })(j);
+          }
+        })(i);
+      }
+    }
+
+    makeSections(sections);
+  }
+
+  var partition = (total, sections) => {
+    var allPartitions = Array.from({length: total - 1}, (v, i) => i + 1);
+    var partitions = [];
+
+    for (var i = 0; i < sections - 1; i++) {
+      var newPartition = randomItem(allPartitions);
+
+      while (partitions.includes(newPartition)) {
+        newPartition = randomItem(allPartitions);
+      }
+
+      partitions.push(newPartition);
+    }
+
+    partitions.push(0);
+    partitions.push(total);
+    partitions.sort((a, b) => a - b);
+
+    return partitions;
+  };
+
+  makeSliders(true,  settings.horizontal.sections, settings.horizontal.subsections);
+  makeSliders(false, settings.vertical.sections,   settings.vertical.subsections);
+</script>
+
+</html>
